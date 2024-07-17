@@ -15,7 +15,8 @@ struct VisionKitQRCodeScanner: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> DataScannerViewController {
         let dataScannerViewController = DataScannerViewController(
-            recognizedDataTypes: [.barcode(symbologies: [.qr])]
+            recognizedDataTypes: [.barcode(symbologies: [.qr])],
+            isHighlightingEnabled: true
         )
         dataScannerViewController.delegate = context.coordinator
         try? dataScannerViewController.startScanning()
