@@ -15,6 +15,7 @@ struct VisionKitQRCodeScanner: UIViewControllerRepresentable {
         let dataScannerViewController = DataScannerViewController(
             recognizedDataTypes: [.barcode(symbologies: [.qr])]
         )
+        try? dataScannerViewController.startScanning()
         return dataScannerViewController
     }
     
