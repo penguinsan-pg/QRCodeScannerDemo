@@ -8,9 +8,9 @@
 
 import SwiftUI
 
-struct DemoRootView: View {
+public struct DemoRootView: View {
 
-    var body: some View {
+    public var body: some View {
         Text("Hello, World!")
     }
 }
