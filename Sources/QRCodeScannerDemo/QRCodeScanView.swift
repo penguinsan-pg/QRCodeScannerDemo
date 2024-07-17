@@ -13,6 +13,15 @@ struct QRCodeScanView: View {
     enum ScannerType {
         case visionKit
         case avFoundation
+
+        var title: String {
+            switch self {
+            case .visionKit:
+                "VisionKitでスキャン"
+            case .avFoundation:
+                "AVFoundationでスキャン"
+            }
+        }
     }
 
     @State private var recognizedPayload = ""
@@ -34,6 +43,8 @@ struct QRCodeScanView: View {
                     .multilineTextAlignment(.leading)
             }
         }
+        .navigationTitle(scannerType.title)
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     private func scanner() -> some View {
@@ -48,5 +59,7 @@ struct QRCodeScanView: View {
 }
 
 #Preview {
-    QRCodeScanView(scannerType: .visionKit)
+    NavigationStack {
+        QRCodeScanView(scannerType: .visionKit)
+    }
 }
