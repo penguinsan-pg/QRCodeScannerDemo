@@ -10,6 +10,8 @@ import SwiftUI
 
 public struct DemoRootView: View {
 
+    public init() {}
+
     public var body: some View {
         NavigationStack {
             VStack(spacing: 80) {
