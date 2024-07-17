@@ -47,11 +47,12 @@ struct QRCodeScanView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
+    @ViewBuilder
     private func scanner() -> some View {
         // TODO: QRコードスキャナの View に置き換える
         switch scannerType {
         case .visionKit:
-            Color.orange
+            VisionKitQRCodeScanner(recognizedPayload: $recognizedPayload)
         case .avFoundation:
             Color.blue
         }
