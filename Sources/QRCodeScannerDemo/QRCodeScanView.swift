@@ -52,7 +52,7 @@ struct QRCodeScanView: View {
         // TODO: QRコードスキャナの View に置き換える
         switch scannerType {
         case .visionKit:
-            VisionKitQRCodeScanner()
+            VisionKitQRCodeScanner(recognizedPayload: $recognizedPayload)
         case .avFoundation:
             Color.blue
         }
