@@ -12,6 +12,10 @@ import VisionKit
 struct VisionKitQRCodeScanner: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> DataScannerViewController {
+        let dataScannerViewController = DataScannerViewController(
+            recognizedDataTypes: [.barcode(symbologies: [.qr])]
+        )
+        return dataScannerViewController
     }
     
     func updateUIViewController(_ uiViewController: DataScannerViewController, context: Context) {
