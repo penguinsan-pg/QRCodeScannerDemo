@@ -10,13 +10,19 @@ import SwiftUI
 
 struct QRCodeScanView: View {
 
+    enum ScannerType {
+        case visionKit
+        case avFoundation
+    }
+
     @State private var recognizedPayload = ""
+
+    let scannerType: ScannerType
 
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 24) {
-                // TODO: QRコードスキャナの View を配置する
-                Color.orange
+                scanner()
                     .frame(maxWidth: .infinity)
                     .frame(height: geometry.size.height * 0.7)
 
@@ -29,8 +35,18 @@ struct QRCodeScanView: View {
             }
         }
     }
+
+    private func scanner() -> some View {
+        // TODO: QRコードスキャナの View に置き換える
+        switch scannerType {
+        case .visionKit:
+            Color.orange
+        case .avFoundation:
+            Color.blue
+        }
+    }
 }
 
 #Preview {
-    QRCodeScanView()
+    QRCodeScanView(scannerType: .visionKit)
 }
