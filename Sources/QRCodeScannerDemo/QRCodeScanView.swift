@@ -49,12 +49,11 @@ struct QRCodeScanView: View {
 
     @ViewBuilder
     private func scanner() -> some View {
-        // TODO: QRコードスキャナの View に置き換える
         switch scannerType {
         case .visionKit:
             VisionKitQRCodeScanner(recognizedPayload: $recognizedPayload)
         case .avFoundation:
-            Color.blue
+            AVFoundationQRCodeScanner(recognizedPayload: $recognizedPayload)
         }
     }
 }
