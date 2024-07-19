@@ -31,6 +31,7 @@ struct AVFoundationQRCodeScanner: UIViewControllerRepresentable {
 
         sessionQueue.async {
             self.configureSession()
+            self.session.startRunning()
         }
 
         return viewController
