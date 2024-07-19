@@ -20,10 +20,12 @@ struct AVFoundationQRCodeScanner: UIViewControllerRepresentable {
     private let metadataObjectQueue = DispatchQueue(label: "metadataObjectQueue")
 
     private let previewLayer: AVCaptureVideoPreviewLayer
+    private let boundingBox: CAShapeLayer
 
     init(recognizedPayload: Binding<String>) {
         self._recognizedPayload = recognizedPayload
         self.previewLayer = Self.makePreviewLayer(session: self.session)
+        self.boundingBox = Self.makeBoundingBox()
     }
 
     func makeUIViewController(context: Context) -> UIViewController {
@@ -31,8 +33,10 @@ struct AVFoundationQRCodeScanner: UIViewControllerRepresentable {
 
         viewController.view.layer.masksToBounds = true
         viewController.view.layer.addSublayer(previewLayer)
+        viewController.view.layer.addSublayer(boundingBox)
 
         previewLayer.frame = viewController.view.layer.bounds
+        boundingBox.frame = viewController.view.layer.bounds
 
         sessionQueue.async {
             self.configureSession(metadataObjectTypes: [.qr], delegate: context.coordinator)
@@ -44,6 +48,7 @@ struct AVFoundationQRCodeScanner: UIViewControllerRepresentable {
     
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
         previewLayer.frame = uiViewController.view.layer.bounds
+        boundingBox.frame = uiViewController.view.layer.bounds
     }
 
     func makeCoordinator() -> Coordinator {
@@ -65,10 +70,17 @@ struct AVFoundationQRCodeScanner: UIViewControllerRepresentable {
                   let stringValue = machineReadableCode.stringValue
             else {
                 parent.recognizedPayload = ""
+                DispatchQueue.main.async {
+                    self.parent.updateBoundingBox(nil)
+                }
+
                 return
             }
 
             parent.recognizedPayload = stringValue
+            DispatchQueue.main.async {
+                self.parent.updateBoundingBox(machineReadableCode)
+            }
         }
     }
 }
@@ -107,6 +119,31 @@ extension AVFoundationQRCodeScanner {
             metadataOutput.setMetadataObjectsDelegate(delegate, queue: metadataObjectQueue)
         }
     }
+
+    private func updateBoundingBox(_ metadataObject: AVMetadataObject?) {
+        guard let metadataObject,
+              let transformedObject = previewLayer.transformedMetadataObject(for: metadataObject) as? AVMetadataMachineReadableCodeObject 
+        else {
+            boundingBox.isHidden = true
+            return
+        }
+
+        let corners = transformedObject.corners
+        guard let lastPoint = corners.last else {
+            boundingBox.isHidden = true
+            return
+        }
+
+        let path = UIBezierPath()
+        path.move(to: lastPoint)
+
+        corners.forEach { point in
+            path.addLine(to: point)
+        }
+
+        boundingBox.path = path.cgPath
+        boundingBox.isHidden = false
+    }
 }
 
 extension AVFoundationQRCodeScanner {
@@ -116,5 +153,13 @@ extension AVFoundationQRCodeScanner {
         layer.videoGravity = .resizeAspectFill
         layer.connection?.videoOrientation = .portrait
         return layer
+    }
+
+    private static func makeBoundingBox() -> CAShapeLayer {
+        let boundingBox = CAShapeLayer()
+        boundingBox.strokeColor = UIColor.green.cgColor
+        boundingBox.lineWidth = 4.0
+        boundingBox.fillColor = UIColor.clear.cgColor
+        return boundingBox
     }
 }
