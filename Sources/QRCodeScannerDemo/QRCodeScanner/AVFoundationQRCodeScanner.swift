@@ -32,5 +32,25 @@ struct AVFoundationQRCodeScanner: UIViewControllerRepresentable {
 extension AVFoundationQRCodeScanner {
 
     private func configureSession() {
+        defer {
+            session.commitConfiguration()
+        }
+
+        session.beginConfiguration()
+
+        let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
+        guard let videoDevice else {
+            return
+        }
+
+        do {
+            let videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
+
+            if session.canAddInput(videoDeviceInput) {
+                session.addInput(videoDeviceInput)
+            }
+        } catch {
+            return
+        }
     }
 }
