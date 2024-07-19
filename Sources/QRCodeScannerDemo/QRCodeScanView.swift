@@ -53,7 +53,7 @@ struct QRCodeScanView: View {
         case .visionKit:
             VisionKitQRCodeScanner(recognizedPayload: $recognizedPayload)
         case .avFoundation:
-            AVFoundationQRCodeScanner()
+            AVFoundationQRCodeScanner(recognizedPayload: $recognizedPayload)
         }
     }
 }

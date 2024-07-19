@@ -12,12 +12,17 @@ import UIKit
 
 struct AVFoundationQRCodeScanner: UIViewControllerRepresentable {
 
+    @Binding var recognizedPayload: String
+
     private let session = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "sessionQueue")
+    private let metadataOutput = AVCaptureMetadataOutput()
+    private let metadataObjectQueue = DispatchQueue(label: "metadataObjectQueue")
 
     private let previewLayer: AVCaptureVideoPreviewLayer
 
-    init() {
+    init(recognizedPayload: Binding<String>) {
+        self._recognizedPayload = recognizedPayload
         self.previewLayer = Self.makePreviewLayer(session: self.session)
     }
 
@@ -30,7 +35,7 @@ struct AVFoundationQRCodeScanner: UIViewControllerRepresentable {
         previewLayer.frame = viewController.view.layer.bounds
 
         sessionQueue.async {
-            self.configureSession()
+            self.configureSession(metadataObjectTypes: [.qr], delegate: context.coordinator)
             self.session.startRunning()
         }
 
@@ -40,11 +45,40 @@ struct AVFoundationQRCodeScanner: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
         previewLayer.frame = uiViewController.view.layer.bounds
     }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    final class Coordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate {
+
+        private let parent: AVFoundationQRCodeScanner
+
+        init(parent: AVFoundationQRCodeScanner) {
+            self.parent = parent
+        }
+
+        func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+            guard let metadataObject = metadataObjects.first,
+                  let machineReadableCode = metadataObject as? AVMetadataMachineReadableCodeObject,
+                  machineReadableCode.type == .qr,
+                  let stringValue = machineReadableCode.stringValue
+            else {
+                parent.recognizedPayload = ""
+                return
+            }
+
+            parent.recognizedPayload = stringValue
+        }
+    }
 }
 
 extension AVFoundationQRCodeScanner {
 
-    private func configureSession() {
+    private func configureSession(
+        metadataObjectTypes: [AVMetadataObject.ObjectType],
+        delegate: AVCaptureMetadataOutputObjectsDelegate
+    ) {
         defer {
             session.commitConfiguration()
         }
@@ -64,6 +98,13 @@ extension AVFoundationQRCodeScanner {
             }
         } catch {
             return
+        }
+
+        if session.canAddOutput(metadataOutput) {
+            session.addOutput(metadataOutput)
+
+            metadataOutput.metadataObjectTypes = metadataObjectTypes
+            metadataOutput.setMetadataObjectsDelegate(delegate, queue: metadataObjectQueue)
         }
     }
 }
