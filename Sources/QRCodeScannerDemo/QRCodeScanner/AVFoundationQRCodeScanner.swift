@@ -73,7 +73,6 @@ struct AVFoundationQRCodeScanner: UIViewControllerRepresentable {
                 DispatchQueue.main.async {
                     self.parent.updateBoundingBox(nil)
                 }
-
                 return
             }
 
@@ -85,9 +84,9 @@ struct AVFoundationQRCodeScanner: UIViewControllerRepresentable {
     }
 }
 
-extension AVFoundationQRCodeScanner {
+private extension AVFoundationQRCodeScanner {
 
-    private func configureSession(
+    func configureSession(
         metadataObjectTypes: [AVMetadataObject.ObjectType],
         delegate: AVCaptureMetadataOutputObjectsDelegate
     ) {
@@ -120,7 +119,7 @@ extension AVFoundationQRCodeScanner {
         }
     }
 
-    private func updateBoundingBox(_ metadataObject: AVMetadataObject?) {
+    func updateBoundingBox(_ metadataObject: AVMetadataObject?) {
         guard let metadataObject,
               let transformedObject = previewLayer.transformedMetadataObject(for: metadataObject) as? AVMetadataMachineReadableCodeObject 
         else {
@@ -146,16 +145,16 @@ extension AVFoundationQRCodeScanner {
     }
 }
 
-extension AVFoundationQRCodeScanner {
+private extension AVFoundationQRCodeScanner {
 
-    private static func makePreviewLayer(session: AVCaptureSession) -> AVCaptureVideoPreviewLayer {
+    static func makePreviewLayer(session: AVCaptureSession) -> AVCaptureVideoPreviewLayer {
         let layer = AVCaptureVideoPreviewLayer(session: session)
         layer.videoGravity = .resizeAspectFill
         layer.connection?.videoOrientation = .portrait
         return layer
     }
 
-    private static func makeBoundingBox() -> CAShapeLayer {
+    static func makeBoundingBox() -> CAShapeLayer {
         let boundingBox = CAShapeLayer()
         boundingBox.strokeColor = UIColor.green.cgColor
         boundingBox.lineWidth = 4.0
