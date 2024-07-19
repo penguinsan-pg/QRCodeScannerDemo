@@ -15,8 +15,19 @@ struct AVFoundationQRCodeScanner: UIViewControllerRepresentable {
     private let session = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "sessionQueue")
 
+    private let previewLayer: AVCaptureVideoPreviewLayer
+
+    init() {
+        self.previewLayer = Self.makePreviewLayer(session: self.session)
+    }
+
     func makeUIViewController(context: Context) -> UIViewController {
         let viewController = UIViewController()
+
+        viewController.view.layer.masksToBounds = true
+        viewController.view.layer.addSublayer(previewLayer)
+
+        previewLayer.frame = viewController.view.layer.bounds
 
         sessionQueue.async {
             self.configureSession()
@@ -26,6 +37,7 @@ struct AVFoundationQRCodeScanner: UIViewControllerRepresentable {
     }
     
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
+        previewLayer.frame = uiViewController.view.layer.bounds
     }
 }
 
@@ -52,5 +64,15 @@ extension AVFoundationQRCodeScanner {
         } catch {
             return
         }
+    }
+}
+
+extension AVFoundationQRCodeScanner {
+
+    private static func makePreviewLayer(session: AVCaptureSession) -> AVCaptureVideoPreviewLayer {
+        let layer = AVCaptureVideoPreviewLayer(session: session)
+        layer.videoGravity = .resizeAspectFill
+        layer.connection?.videoOrientation = .portrait
+        return layer
     }
 }
